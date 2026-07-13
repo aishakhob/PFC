@@ -2,168 +2,1429 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pocket Friendly</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pocket Friendly — Your Financial Journal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-body {
-  font-family: Arial;
-  margin: 0;
-  padding: 0;
-  background: #f5f5f5;
+/* ============================================================
+   POCKET FRIENDLY — design tokens
+   Palette: ledger / passbook aesthetic — sage paper, forest ink,
+   a wax-seal gold accent for warmth, teal for growth, brick for alerts.
+   Display face: Fraunces (a warm, slightly humanist serif — the
+   "handwritten ledger heading" feel). Body: IBM Plex Sans.
+   Numbers always render in IBM Plex Mono, like typewritten figures
+   in a passbook column.
+   ============================================================ */
+:root{
+  --paper: #F1F4EE;
+  --paper-raised: #FFFFFF;
+  --ink: #1F2E2B;
+  --ink-soft: #4B5B54;
+  --line: #D9DFD3;
+  --gold: #B98A1C;
+  --gold-soft: #F3E6C6;
+  --teal: #2F6F62;
+  --teal-soft: #DEEDE8;
+  --brick: #B3453F;
+  --brick-soft: #F6DFDD;
+  --amber: #C97A1F;
+  --amber-soft: #F6E7D0;
+  --shadow: 0 1px 2px rgba(31,46,43,0.06), 0 4px 14px rgba(31,46,43,0.06);
+  --radius: 14px;
+  --font-display: 'Fraunces', serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+[data-theme="dark"]{
+  --paper: #142019;
+  --paper-raised: #1B2A22;
+  --ink: #EAF1EA;
+  --ink-soft: #A9BBAF;
+  --line: #2C3D33;
+  --gold: #E0B24B;
+  --gold-soft: #3A3320;
+  --teal: #5FAE9B;
+  --teal-soft: #1D332D;
+  --brick: #E27871;
+  --brick-soft: #3B2422;
+  --amber: #E3A354;
+  --amber-soft: #3B2E1B;
+  --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 6px 18px rgba(0,0,0,0.35);
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--font-body);
+  min-height:100vh;
+  transition:background .25s ease, color .25s ease;
+}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;margin:0 0 .3em;letter-spacing:.2px;}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums;}
+a{color:inherit;}
+button{font-family:var(--font-body);cursor:pointer;}
+::selection{background:var(--gold-soft);}
+
+/* ---------- layout shells ---------- */
+#app{min-height:100vh;display:flex;flex-direction:column;}
+.hidden{display:none !important;}
+.container{max-width:1080px;margin:0 auto;padding:0 20px;width:100%;}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:var(--paper-raised);
+  border-bottom:1px solid var(--line);
+  box-shadow:var(--shadow);
+}
+.topbar-inner{
+  max-width:1080px;margin:0 auto;padding:12px 20px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto;}
+.brand-mark{
+  width:34px;height:34px;border-radius:9px;
+  background:linear-gradient(155deg,var(--teal),var(--ink));
+  display:flex;align-items:center;justify-content:center;font-size:17px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+}
+.brand-name{font-family:var(--font-display);font-weight:600;font-size:19px;}
+.brand-sub{font-size:11px;color:var(--ink-soft);margin-top:-2px;letter-spacing:.4px;text-transform:uppercase;}
+
+.user-chip{
+  display:flex;align-items:center;gap:8px;
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:999px;padding:5px 12px 5px 5px;font-size:13.5px;
+}
+.user-chip .avatar{width:26px;height:26px;border-radius:50%;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;font-size:14px;}
+.icon-btn{
+  background:var(--paper);border:1px solid var(--line);border-radius:10px;
+  padding:7px 11px;font-size:13.5px;color:var(--ink);display:inline-flex;align-items:center;gap:6px;
+  transition:transform .12s ease, background .15s ease;
+}
+.icon-btn:hover{background:var(--teal-soft);}
+.icon-btn:active{transform:scale(0.96);}
+.icon-btn.primary{background:var(--teal);color:#fff;border-color:var(--teal);}
+.icon-btn.primary:hover{filter:brightness(1.06);}
+.icon-btn.danger{background:var(--paper);border-color:var(--brick);color:var(--brick);}
+.icon-btn.danger:hover{background:var(--brick-soft);}
+.icon-btn.ghost{background:transparent;border-color:transparent;}
+
+/* nav tabs */
+.tabbar{
+  background:var(--paper-raised);border-bottom:1px solid var(--line);
+  overflow-x:auto;
+}
+.tabbar-inner{max-width:1080px;margin:0 auto;display:flex;gap:2px;padding:0 12px;}
+.tab{
+  border:none;background:transparent;padding:12px 14px;font-size:13.5px;
+  color:var(--ink-soft);white-space:nowrap;border-bottom:2px solid transparent;
+  font-weight:500;
+}
+.tab.active{color:var(--ink);border-bottom-color:var(--gold);}
+.tab:hover{color:var(--ink);}
+
+/* save status */
+.save-status{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;}
+.save-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);}
+
+/* ---------- page content ---------- */
+main{flex:1;padding:26px 0 70px;}
+.view{display:none;}
+.view.active{display:block;animation:fadein .25s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:none;}}
+
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap;}
+.page-head h1{font-size:26px;}
+.page-actions{display:flex;gap:8px;flex-wrap:wrap;}
+
+.card{
+  background:var(--paper-raised);border:1px solid var(--line);
+  border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;
+}
+.grid{display:grid;gap:14px;}
+.grid.cols-5{grid-template-columns:repeat(5,1fr);}
+.grid.cols-4{grid-template-columns:repeat(4,1fr);}
+.grid.cols-3{grid-template-columns:repeat(3,1fr);}
+.grid.cols-2{grid-template-columns:repeat(2,1fr);}
+@media(max-width:980px){.grid.cols-5{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:880px){.grid.cols-4{grid-template-columns:repeat(2,1fr);}.grid.cols-3{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:560px){.grid.cols-5,.grid.cols-4,.grid.cols-3,.grid.cols-2{grid-template-columns:1fr;}}
+
+/* stat card */
+.stat-card{position:relative;overflow:hidden;}
+.stat-card .stat-icon{font-size:20px;}
+.stat-card .stat-label{font-size:12px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.5px;margin-top:6px;}
+.stat-card .stat-value{font-family:var(--font-mono);font-size:24px;font-weight:600;margin-top:4px;}
+.stat-card .stat-sub{font-size:12px;color:var(--ink-soft);margin-top:4px;}
+
+/* alert banner */
+.alert{
+  border-radius:12px;padding:12px 16px;margin-bottom:10px;
+  display:flex;align-items:flex-start;gap:10px;font-size:14px;border:1px solid transparent;
+}
+.alert.urgent{background:var(--brick-soft);color:var(--brick);border-color:var(--brick);}
+.alert.soon{background:var(--amber-soft);color:var(--amber);border-color:var(--amber);}
+.alert.info{background:var(--teal-soft);color:var(--teal);border-color:var(--teal);}
+.alert b{font-weight:600;}
+
+/* insight / comment card */
+.insight-card{
+  background:linear-gradient(155deg,var(--teal-soft),var(--paper-raised));
+  border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;
+  font-size:14.5px;line-height:1.55;
+}
+.insight-card .tag{
+  display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.6px;
+  color:var(--teal);font-weight:600;margin-bottom:6px;
 }
 
-.dark {
-  background: #121212;
-  color: white;
+/* forms */
+label{display:block;font-size:12.5px;color:var(--ink-soft);margin-bottom:4px;font-weight:500;}
+input,select,textarea{
+  width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);
+  background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:14px;
+}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal);}
+.field{margin-bottom:12px;}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;}
+.form-actions{display:flex;gap:8px;margin-top:6px;}
+
+/* tables / lists */
+table{width:100%;border-collapse:collapse;font-size:14px;}
+th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--ink-soft);padding:8px 10px;border-bottom:1px solid var(--line);}
+td{padding:10px;border-bottom:1px dashed var(--line);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+.row-actions{display:flex;gap:6px;}
+.mini-btn{
+  border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:4px 8px;font-size:12px;color:var(--ink-soft);
+}
+.mini-btn:hover{background:var(--teal-soft);color:var(--ink);}
+.mini-btn.del:hover{background:var(--brick-soft);color:var(--brick);border-color:var(--brick);}
+.pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:600;}
+.pill.need{background:var(--teal-soft);color:var(--teal);}
+.pill.want{background:var(--amber-soft);color:var(--amber);}
+.pill.life{background:var(--teal-soft);color:var(--teal);}
+.pill.health{background:var(--gold-soft);color:var(--gold);}
+.empty{padding:28px 10px;text-align:center;color:var(--ink-soft);font-size:14px;}
+
+.section-title{font-size:15px;font-weight:600;margin:22px 0 10px;display:flex;align-items:center;gap:8px;}
+.divider{border:none;border-top:1px dashed var(--line);margin:20px 0;}
+
+/* progress bar */
+.progress{height:9px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px;}
+.progress-fill{height:100%;background:var(--teal);border-radius:99px;transition:width .4s ease;}
+
+/* achievements */
+.badge{
+  text-align:center;padding:16px 10px;border-radius:var(--radius);border:1px solid var(--line);
+  background:var(--paper-raised);
+}
+.badge .badge-icon{
+  width:50px;height:50px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+  font-size:22px;background:var(--line);
+}
+.badge.unlocked .badge-icon{background:var(--gold-soft);box-shadow: inset 0 0 0 2px var(--gold);}
+.badge.locked{opacity:.55;}
+.badge .badge-name{font-weight:600;font-size:13.5px;}
+.badge .badge-desc{font-size:11.5px;color:var(--ink-soft);margin-top:3px;}
+
+/* learning */
+.accordion{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--paper-raised);margin-bottom:10px;}
+.accordion-head{
+  padding:14px 16px;display:flex;justify-content:space-between;align-items:center;font-weight:600;font-size:14.5px;
+}
+.accordion-head:hover{background:var(--paper);}
+.accordion-body{padding:0 16px 16px;font-size:14px;line-height:1.6;color:var(--ink-soft);display:none;}
+.accordion.open .accordion-body{display:block;}
+.accordion.open .chev{transform:rotate(180deg);}
+.chev{transition:transform .2s ease;}
+.invest-table td, .invest-table th{font-size:13px;}
+.quiz{background:var(--teal-soft);border-radius:10px;padding:12px 14px;margin-top:10px;font-size:14px;}
+.quiz button{margin-right:8px;margin-top:8px;}
+.dyk{background:var(--gold-soft);border-left:3px solid var(--gold);border-radius:8px;padding:10px 14px;font-size:13.5px;margin-top:10px;}
+
+/* login screen */
+.login-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:
+    radial-gradient(circle at 15% 15%, var(--teal-soft), transparent 45%),
+    radial-gradient(circle at 85% 85%, var(--gold-soft), transparent 45%),
+    var(--paper);
+}
+.login-card{
+  width:100%;max-width:430px;background:var(--paper-raised);border:1px solid var(--line);
+  border-radius:18px;box-shadow:var(--shadow);padding:32px 30px;position:relative;
+}
+.login-card .stamp{
+  position:absolute;top:-16px;right:22px;background:var(--gold);color:#fff;
+  font-family:var(--font-display);font-size:12px;padding:6px 12px;border-radius:8px;
+  transform:rotate(3deg);box-shadow:var(--shadow);
+}
+.avatar-pick{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+.avatar-opt{
+  width:42px;height:42px;border-radius:50%;border:2px solid var(--line);background:var(--paper);
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+}
+.avatar-opt.selected{border-color:var(--gold);background:var(--gold-soft);}
+.existing-users{margin-top:18px;}
+.existing-user-row{
+  display:flex;align-items:center;justify-content:space-between;padding:9px 10px;border:1px solid var(--line);
+  border-radius:10px;margin-bottom:7px;font-size:13.5px;
+}
+.existing-user-row:hover{background:var(--paper);}
+.small-note{font-size:12px;color:var(--ink-soft);margin-top:10px;line-height:1.5;}
+
+/* toast */
+#toast{
+  position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--ink);color:var(--paper);padding:11px 20px;border-radius:99px;font-size:13.5px;
+  box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:all .25s ease;z-index:100;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* footer disclaimer */
+footer.disclaimer{
+  border-top:1px solid var(--line);padding:16px 0 30px;text-align:center;font-size:11.5px;color:var(--ink-soft);
 }
 
-header {
-  padding: 15px;
-  background: #4CAF50;
-  color: white;
-  display: flex;
-  justify-content: space-between;
-}
-
-.container {
-  padding: 20px;
-}
-
-.card {
-  background: white;
-  padding: 15px;
-  margin-bottom: 15px;
-  border-radius: 10px;
-}
-
-.dark .card {
-  background: #1e1e1e;
-}
-
-button {
-  padding: 8px 12px;
-  margin: 5px;
-}
-
-input {
-  padding: 8px;
-  margin: 5px;
+@media(max-width:640px){
+  .page-head h1{font-size:21px;}
+  .topbar-inner{gap:8px;}
+  .brand-sub{display:none;}
 }
 </style>
 </head>
-
 <body>
+<div id="app">
 
-<header>
-  <div>
-    <strong>Pocket Friendly</strong>
-  </div>
-  <div id="userBox"></div>
-</header>
+  <!-- ================= LOGIN SCREEN ================= -->
+  <div id="loginScreen" class="login-wrap">
+    <div class="login-card">
+      <div class="stamp">est. today</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+        <div class="brand-mark">📔</div>
+        <div>
+          <h1 style="font-size:22px;margin:0;">Pocket Friendly</h1>
+          <div class="brand-sub" style="text-transform:none;letter-spacing:0;">your financial journal</div>
+        </div>
+      </div>
+      <p style="font-size:13.5px;color:var(--ink-soft);margin:14px 0 18px;line-height:1.55;">
+        Everything you enter stays saved in this browser, under your own profile name — no account, no server, no password. Come back any time and pick up where you left off.
+      </p>
 
-<div class="container">
+      <div class="field">
+        <label for="nameInput">Your name</label>
+        <input id="nameInput" type="text" placeholder="e.g. Aanya" maxlength="24">
+      </div>
+      <div class="field">
+        <label>Pick an avatar</label>
+        <div class="avatar-pick" id="avatarPick"></div>
+      </div>
+      <div class="form-actions">
+        <button class="icon-btn primary" id="startBtn" style="flex:1;justify-content:center;">Start / Continue Journal →</button>
+      </div>
 
-  <button onclick="toggleTheme()">🌗 Toggle Theme</button>
-  <button onclick="saveData()">💾 Save</button>
-  <button onclick="loadData()">🔄 Refresh</button>
-  <button onclick="resetApp()">♻️ Reset</button>
-
-  <div class="card">
-    <h3>💰 Income</h3>
-    <input type="number" id="incomeInput" placeholder="Enter income">
-  </div>
-
-  <div class="card">
-    <h3>💸 Expenses</h3>
-    <input type="number" id="expenseInput" placeholder="Enter expenses">
-  </div>
-
-  <div class="card">
-    <h3>📊 Dashboard</h3>
-    <p>Total Income: <span id="incomeDisplay">0</span></p>
-    <p>Total Expenses: <span id="expenseDisplay">0</span></p>
-    <p>Savings: <span id="savingsDisplay">0</span></p>
-    <p id="insight"></p>
-  </div>
-
-  <div class="card">
-    <h3>⚠️ Disclaimer</h3>
-    <p style="font-size:12px;">
-      This tool is for educational and personal financial tracking purposes only.
-      It does not provide investment advice.
-    </p>
+      <div class="existing-users" id="existingUsers"></div>
+      <p class="small-note">⚠️ This app is 100% local to your browser (localStorage). Clearing your browser data will erase these journals. Nothing is uploaded anywhere.</p>
+    </div>
   </div>
 
+  <!-- ================= MAIN APP ================= -->
+  <div id="mainApp" class="hidden">
+    <div class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-mark">📔</div>
+          <div>
+            <div class="brand-name">Pocket Friendly</div>
+            <div class="brand-sub">your financial journal</div>
+          </div>
+        </div>
+        <div class="save-status" id="saveStatus"><span class="save-dot"></span> All saved</div>
+        <button class="icon-btn" id="themeToggle">🌗 Theme</button>
+        <div class="user-chip">
+          <span class="avatar" id="chipAvatar">🙂</span>
+          <span id="chipName">User</span>
+        </div>
+        <button class="icon-btn ghost" id="switchUserBtn">Switch user</button>
+      </div>
+      <div class="tabbar"><div class="tabbar-inner" id="tabbarInner"></div></div>
+    </div>
+
+    <main>
+      <div class="container">
+        <div class="view active" id="view-dashboard"></div>
+        <div class="view" id="view-income"></div>
+        <div class="view" id="view-expenses"></div>
+        <div class="view" id="view-goals"></div>
+        <div class="view" id="view-emergency"></div>
+        <div class="view" id="view-insurance"></div>
+        <div class="view" id="view-savings"></div>
+        <div class="view" id="view-debt"></div>
+        <div class="view" id="view-investments"></div>
+        <div class="view" id="view-payments"></div>
+        <div class="view" id="view-learn"></div>
+        <div class="view" id="view-achievements"></div>
+        <div class="view" id="view-settings"></div>
+      </div>
+    </main>
+
+    <footer class="disclaimer container">
+      🛡️ Pocket Friendly is an educational tool only. It does not provide financial, investment, insurance or tax advice.
+      All figures are estimates you enter yourself — always consult a licensed financial advisor before making decisions.
+    </footer>
+  </div>
 </div>
 
+<div id="toast"></div>
+
 <script>
+/* ============================================================
+   POCKET FRIENDLY — application logic
+   Storage model:
+     localStorage['pf_users']            -> array of usernames
+     localStorage['pf_current']          -> active username
+     localStorage['pf_data::<username>'] -> JSON blob of that user's data
+   No backend, no auth — "multi-user" means multiple local profiles.
+   ============================================================ */
+(function(){
+  "use strict";
 
-// USER LICENSE SYSTEM
-let user = JSON.parse(localStorage.getItem("user"));
+  const AVATARS = ["🙂","👩","🧑","👨","🧕","👵","🧑‍🎓","🧑‍💼","🧑‍🌾","🐯","🦉","🐢"];
+  const uid = () => Math.random().toString(36).slice(2,9);
+  const todayISO = () => new Date().toISOString().slice(0,10);
+  const fmt = n => "₹" + (Number(n)||0).toLocaleString('en-IN',{maximumFractionDigits:0});
+  const daysUntil = dateStr => {
+    if(!dateStr) return Infinity;
+    const d = new Date(dateStr+"T00:00:00");
+    const now = new Date(); now.setHours(0,0,0,0);
+    return Math.round((d-now)/(1000*60*60*24));
+  };
 
-if (!user) {
-  let name = prompt("Enter your name");
-  let email = prompt("Enter your email");
+  let currentUser = null;
+  let data = null;
+  let activeAvatar = AVATARS[0];
 
-  user = { name, email };
-  localStorage.setItem("user", JSON.stringify(user));
-}
-
-document.getElementById("userBox").innerHTML =
-  `👤 ${user.name} <br> 📧 ${user.email} <br> 🔒 Personal Use`;
-
-// DATA STORAGE
-let data = JSON.parse(localStorage.getItem("data")) || {
-  income: 0,
-  expenses: 0
-};
-
-// LOAD DATA
-function loadData() {
-  document.getElementById("incomeDisplay").innerText = data.income;
-  document.getElementById("expenseDisplay").innerText = data.expenses;
-
-  let savings = data.income - data.expenses;
-  document.getElementById("savingsDisplay").innerText = savings;
-
-  // INSIGHT
-  let insight = "";
-  if (data.expenses > data.income) {
-    insight = "⚠️ You are overspending!";
-  } else {
-    insight = "✅ Good job managing money!";
+  /* ---------------- default data shape ---------------- */
+  function freshData(name, avatar){
+    return {
+      profile:{ name, avatar, createdAt: todayISO() },
+      income:[], expenses:[], investments:[], debts:[], savings:[],
+      emergencyFund:{ current:0, monthlyExpenseEstimate:0, targetMonths:6 },
+      goals:[], insurance:[], sips:[],
+      unlockedBadges:[],
+      history:[], // {month:"2026-07", netSavings: n}
+      theme:"light"
+    };
   }
 
-  document.getElementById("insight").innerText = insight;
-}
-
-// SAVE DATA
-function saveData() {
-  data.income = Number(document.getElementById("incomeInput").value);
-  data.expenses = Number(document.getElementById("expenseInput").value);
-
-  localStorage.setItem("data", JSON.stringify(data));
-  alert("Data saved successfully ✅");
-
-  loadData();
-}
-
-// RESET
-function resetApp() {
-  if (confirm("Are you sure?")) {
-    localStorage.clear();
-    location.reload();
+  /* ---------------- persistence ---------------- */
+  function saveData(silent){
+    localStorage.setItem("pf_data::"+currentUser, JSON.stringify(data));
+    if(!silent) showToast("Data saved successfully ✅");
+    flashSaveStatus();
   }
-}
+  function loadData(username){
+    const raw = localStorage.getItem("pf_data::"+username);
+    if(!raw) return freshData(username, AVATARS[0]);
+    const parsed = JSON.parse(raw);
+    // backfill any fields introduced after this profile was first saved
+    const defaults = freshData(username, AVATARS[0]);
+    Object.keys(defaults).forEach(key=>{
+      if(!(key in parsed)) parsed[key] = defaults[key];
+    });
+    return parsed;
+  }
+  function getUsers(){
+    return JSON.parse(localStorage.getItem("pf_users")||"[]");
+  }
+  function addUser(username){
+    const users = getUsers();
+    if(!users.includes(username)){ users.push(username); localStorage.setItem("pf_users", JSON.stringify(users)); }
+  }
 
-// THEME
-function toggleTheme() {
-  document.body.classList.toggle("dark");
-}
+  function flashSaveStatus(){
+    const el = document.getElementById("saveStatus");
+    el.innerHTML = '<span class="save-dot"></span> Saved just now';
+    clearTimeout(flashSaveStatus._t);
+    flashSaveStatus._t = setTimeout(()=>{ el.innerHTML = '<span class="save-dot"></span> All saved'; }, 2500);
+  }
 
-// INIT
-loadData();
+  function showToast(msg){
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>t.classList.remove("show"), 2600);
+  }
 
+  /* ================= LOGIN SCREEN ================= */
+  function buildAvatarPicker(){
+    const wrap = document.getElementById("avatarPick");
+    wrap.innerHTML = AVATARS.map(a=>`<button type="button" class="avatar-opt ${a===activeAvatar?'selected':''}" data-av="${a}">${a}</button>`).join("");
+    wrap.querySelectorAll(".avatar-opt").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        activeAvatar = btn.dataset.av;
+        wrap.querySelectorAll(".avatar-opt").forEach(b=>b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+  }
+
+  function renderExistingUsers(){
+    const wrap = document.getElementById("existingUsers");
+    const users = getUsers();
+    if(!users.length){ wrap.innerHTML=""; return; }
+    wrap.innerHTML = `<div class="section-title">Continue an existing journal</div>` +
+      users.map(u=>{
+        const d = loadData(u);
+        return `<div class="existing-user-row">
+          <span>${d.profile.avatar} <b>${escapeHtml(u)}</b></span>
+          <div style="display:flex;gap:6px;">
+            <button class="mini-btn" data-open="${escapeHtml(u)}">Open</button>
+            <button class="mini-btn del" data-forget="${escapeHtml(u)}">Remove</button>
+          </div>
+        </div>`;
+      }).join("");
+    wrap.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click", ()=>enterApp(b.dataset.open)));
+    wrap.querySelectorAll("[data-forget]").forEach(b=>b.addEventListener("click", ()=>{
+      if(confirm("Remove "+b.dataset.forget+"'s journal from this browser? This cannot be undone.")){
+        localStorage.removeItem("pf_data::"+b.dataset.forget);
+        localStorage.setItem("pf_users", JSON.stringify(getUsers().filter(u=>u!==b.dataset.forget)));
+        renderExistingUsers();
+      }
+    }));
+  }
+
+  function escapeHtml(s){ const d=document.createElement("div"); d.textContent=s; return d.innerHTML; }
+
+  document.getElementById("startBtn").addEventListener("click", ()=>{
+    const name = document.getElementById("nameInput").value.trim();
+    if(!name){ showToast("Please enter your name first"); return; }
+    addUser(name);
+    const existing = localStorage.getItem("pf_data::"+name);
+    if(!existing){
+      data = freshData(name, activeAvatar);
+      currentUser = name;
+      saveData(true);
+    }
+    enterApp(name);
+  });
+
+  function enterApp(username){
+    currentUser = username;
+    data = loadData(username);
+    localStorage.setItem("pf_current", username);
+    document.getElementById("loginScreen").classList.add("hidden");
+    document.getElementById("mainApp").classList.remove("hidden");
+    document.documentElement.setAttribute("data-theme", data.theme || "light");
+    document.getElementById("chipAvatar").textContent = data.profile.avatar;
+    document.getElementById("chipName").textContent = data.profile.name;
+    recalcHistory();
+    checkAchievements();
+    renderAll();
+    switchView("dashboard");
+  }
+
+  document.getElementById("switchUserBtn").addEventListener("click", ()=>{
+    document.getElementById("mainApp").classList.add("hidden");
+    document.getElementById("loginScreen").classList.remove("hidden");
+    document.getElementById("nameInput").value="";
+    activeAvatar = AVATARS[0];
+    buildAvatarPicker();
+    renderExistingUsers();
+  });
+
+  document.getElementById("themeToggle").addEventListener("click", ()=>{
+    const cur = document.documentElement.getAttribute("data-theme")==="dark" ? "light":"dark";
+    document.documentElement.setAttribute("data-theme", cur);
+    data.theme = cur;
+    saveData(true);
+  });
+
+  /* ================= NAVIGATION ================= */
+  const TABS = [
+    {id:"dashboard", label:"📊 Dashboard"},
+    {id:"income", label:"💰 Income"},
+    {id:"expenses", label:"💸 Expenses"},
+    {id:"goals", label:"🎯 Goals"},
+    {id:"emergency", label:"🛡️ Emergency Fund"},
+    {id:"insurance", label:"☂️ Insurance"},
+    {id:"savings", label:"🏦 Savings"},
+    {id:"debt", label:"💳 Debt"},
+    {id:"investments", label:"📈 Investments"},
+    {id:"payments", label:"🔁 Upcoming Payments"},
+    {id:"learn", label:"🧠 Learn"},
+    {id:"achievements", label:"🏆 Achievements"},
+    {id:"settings", label:"⚙️ Settings"},
+  ];
+  function buildTabs(){
+    document.getElementById("tabbarInner").innerHTML = TABS.map(t=>
+      `<button class="tab" data-tab="${t.id}">${t.label}</button>`).join("");
+    document.querySelectorAll(".tab").forEach(b=>b.addEventListener("click", ()=>switchView(b.dataset.tab)));
+  }
+  function switchView(id){
+    document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));
+    document.getElementById("view-"+id).classList.add("active");
+    document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active", t.dataset.tab===id));
+    window.scrollTo({top:0,behavior:"smooth"});
+    if(id==="dashboard") renderDashboard();
+  }
+  function pageControls(viewId){
+    return `<div class="page-actions">
+      <button class="icon-btn" onclick="PF.refresh('${viewId}')">🔄 Refresh</button>
+      <button class="icon-btn primary" onclick="PF.saveNow()">💾 Save</button>
+      <button class="icon-btn ghost" onclick="PF.goDashboard()">← Dashboard</button>
+    </div>`;
+  }
+
+  /* ================= DERIVED TOTALS ================= */
+  function totalIncome(){ return data.income.reduce((s,i)=>s+monthlyAmount(i.amount,i.frequency),0); }
+  function totalExpenses(){ return data.expenses.reduce((s,e)=>s+Number(e.amount||0),0); }
+  function totalWants(){ return data.expenses.filter(e=>e.type==="want").reduce((s,e)=>s+Number(e.amount||0),0); }
+  function totalNeeds(){ return data.expenses.filter(e=>e.type==="need").reduce((s,e)=>s+Number(e.amount||0),0); }
+  function totalInvestments(){ return data.investments.reduce((s,i)=>s+Number(i.amount||0),0); }
+  function totalDebt(){ return data.debts.reduce((s,d)=>s+Number(d.amount||0),0); }
+  function totalSavings(){ return data.savings.reduce((s,x)=>s+Number(x.amount||0),0); }
+  function monthlyAmount(amount, freq){
+    amount = Number(amount)||0;
+    if(freq==="yearly") return amount/12;
+    if(freq==="weekly") return amount*4.33;
+    return amount; // monthly / one-time treated as monthly
+  }
+  function netSavings(){ return totalIncome()-totalExpenses(); }
+
+  function recalcHistory(){
+    const month = new Date().toISOString().slice(0,7);
+    const existing = data.history.find(h=>h.month===month);
+    const val = Math.round(netSavings());
+    if(existing) existing.netSavings = val;
+    else data.history.push({month, netSavings: val});
+    data.history = data.history.slice(-12);
+  }
+
+  /* ================= ALERTS (insurance + SIP, within 2 days) ================= */
+  function getInsuranceAlerts(){
+    const alerts = [];
+    data.insurance.forEach(p=>{
+      const d = daysUntil(p.premiumDate);
+      if(d<=2 && d>=0){
+        alerts.push({level: d<=1?"urgent":"soon", text:`<b>${escapeHtml(p.name)}</b> premium is due in ${d===0?"today":d+" day"+(d===1?"":"s")}.`});
+      }
+    });
+    return alerts;
+  }
+  function getSipAlerts(){
+    const alerts = [];
+    data.sips.forEach(s=>{
+      const d = daysUntil(s.date);
+      if(d<=2 && d>=0){
+        alerts.push({level: d<=1?"urgent":"soon", text:`<b>${escapeHtml(s.name)}</b> SIP payment of ${fmt(s.amount)} is approaching in ${d===0?"today":d+" day"+(d===1?"":"s")}.`});
+      }
+    });
+    return alerts;
+  }
+  function getAlerts(){
+    return [...getInsuranceAlerts(), ...getSipAlerts()];
+  }
+
+  /* ================= SMART COMMENTS / INSIGHTS ================= */
+  function getInsights(){
+    const insights = [];
+    const inc = totalIncome(), exp = totalExpenses(), wants = totalWants();
+    if(inc>0 && exp>0){
+      const wantPct = Math.round((wants/exp)*100);
+      if(wantPct>40) insights.push(`You're spending ${wantPct}% of your expenses on "wants" — consider trimming toward the 30% mark from the 50/30/20 rule.`);
+      else if(wantPct>0) insights.push(`Nice balance — only ${wantPct}% of your spending is on wants. That leaves good room for saving.`);
+    }
+    if(inc>0){
+      const savingsRate = Math.round((netSavings()/inc)*100);
+      if(savingsRate<0) insights.push(`You're spending more than you earn this month. Even trimming one "want" category can flip this around.`);
+      else if(savingsRate<20) insights.push(`You're saving about ${savingsRate}% of your income. Many planners suggest aiming for 20% or more.`);
+      else insights.push(`You're saving roughly ${savingsRate}% of your income — that's a solid habit, keep it up.`);
+    }
+    const ef = data.emergencyFund;
+    const idealFund = (ef.monthlyExpenseEstimate||exp||0) * (ef.targetMonths||6);
+    if(idealFund>0){
+      if(ef.current < idealFund) insights.push(`Your emergency fund covers about ${(ef.current/((ef.monthlyExpenseEstimate||exp||1))).toFixed(1)} month(s) of expenses — below the recommended ${ef.targetMonths||6}.`);
+      else insights.push(`Your emergency fund meets or beats your ${ef.targetMonths||6}-month target. Great safety net.`);
+    }
+    if(data.debts.length){
+      const highInterest = data.debts.filter(d=>Number(d.interestRate)>15);
+      if(highInterest.length) insights.push(`You have ${highInterest.length} high-interest debt(s) above 15% — paying these down first usually saves the most money.`);
+    }
+    if(!data.income.length) insights.push(`Add your income sources to unlock personalised savings insights.`);
+    if(!insights.length) insights.push(`Start logging income and expenses to get tailored insights here.`);
+    return insights;
+  }
+
+  /* ================= ACHIEVEMENTS ================= */
+  const BADGES = [
+    {id:"first_income", icon:"💰", name:"First Paycheck", desc:"Logged your first income entry", check:()=>data.income.length>0},
+    {id:"first_expense", icon:"🧾", name:"Tracking Started", desc:"Logged your first expense", check:()=>data.expenses.length>0},
+    {id:"first_save", icon:"💾", name:"Committed", desc:"Saved your journal for the first time", check:()=>true},
+    {id:"investor", icon:"📈", name:"Investor", desc:"Logged your first investment", check:()=>data.investments.length>0},
+    {id:"protected", icon:"☂️", name:"Protected", desc:"Added an insurance policy", check:()=>data.insurance.length>0},
+    {id:"savings_habit", icon:"🏦", name:"Savings Habit", desc:"Logged your first savings entry", check:()=>data.savings.length>0},
+    {id:"sip_setup", icon:"🔁", name:"Consistent Saver", desc:"Set up a SIP reminder", check:()=>data.sips.length>0},
+    {id:"goal_setter", icon:"🎯", name:"Goal Setter", desc:"Created a financial goal", check:()=>data.goals.length>0},
+    {id:"debt_aware", icon:"💳", name:"Debt Aware", desc:"Logged a debt to track it down", check:()=>data.debts.length>0},
+    {id:"fund_ready", icon:"🛡️", name:"Safety Net", desc:"Emergency fund meets your target", check:()=>{
+        const ef=data.emergencyFund; const base=ef.monthlyExpenseEstimate||totalExpenses();
+        return base>0 && ef.current >= base*(ef.targetMonths||6);
+      }},
+    {id:"positive_saver", icon:"🌱", name:"In the Green", desc:"Net savings are positive this month", check:()=>netSavings()>0},
+    {id:"needs_wants", icon:"⚖️", name:"Balanced Budget", desc:"Wants are under 30% of spending", check:()=>{
+        const exp=totalExpenses(); return exp>0 && (totalWants()/exp)<=0.3;
+      }},
+    {id:"three_months", icon:"📅", name:"Three-Month Streak", desc:"Tracked activity across 3+ months", check:()=>data.history.length>=3},
+  ];
+  function checkAchievements(){
+    let newly = [];
+    BADGES.forEach(b=>{
+      if(!data.unlockedBadges.includes(b.id) && b.check()){
+        data.unlockedBadges.push(b.id);
+        newly.push(b.name);
+      }
+    });
+    if(newly.length){ showToast("🏆 Achievement unlocked: "+newly.join(", ")); }
+  }
+
+  /* ================= RENDER: DASHBOARD ================= */
+  function renderDashboard(){
+    const alerts = getAlerts();
+    const insights = getInsights();
+    const el = document.getElementById("view-dashboard");
+    el.innerHTML = `
+      <div class="page-head">
+        <div>
+          <h1>Welcome back, ${escapeHtml(data.profile.name)} ${data.profile.avatar}</h1>
+          <div style="color:var(--ink-soft);font-size:13.5px;">Here's where your money stands today.</div>
+        </div>
+        ${pageControls('dashboard')}
+      </div>
+
+      ${alerts.length ? `<div style="margin-bottom:16px;">` + alerts.map(a=>`<div class="alert ${a.level==='urgent'?'urgent':'soon'}">⏰ ${a.text}</div>`).join("") + `</div>` : ""}
+
+      <div class="grid cols-5" style="margin-bottom:18px;">
+        <div class="card stat-card"><div class="stat-icon">💰</div><div class="stat-label">Monthly Income</div><div class="stat-value num">${fmt(totalIncome())}</div></div>
+        <div class="card stat-card"><div class="stat-icon">💸</div><div class="stat-label">Monthly Expenses</div><div class="stat-value num">${fmt(totalExpenses())}</div></div>
+        <div class="card stat-card"><div class="stat-icon">🌱</div><div class="stat-label">Net Savings</div><div class="stat-value num" style="color:${netSavings()>=0?'var(--teal)':'var(--brick)'}">${fmt(netSavings())}</div></div>
+        <div class="card stat-card"><div class="stat-icon">🏦</div><div class="stat-label">Total Saved</div><div class="stat-value num">${fmt(totalSavings())}</div></div>
+        <div class="card stat-card"><div class="stat-icon">📈</div><div class="stat-label">Total Invested</div><div class="stat-value num">${fmt(totalInvestments())}</div></div>
+      </div>
+
+      <div class="grid cols-2" style="margin-bottom:18px;">
+        <div class="insight-card">
+          <div class="tag">💬 Smart comment</div>
+          ${insights.map(i=>`<div style="margin-bottom:8px;">• ${i}</div>`).join("")}
+        </div>
+        <div class="card">
+          <div class="tag" style="color:var(--gold);text-transform:uppercase;font-size:11px;letter-spacing:.6px;font-weight:600;">📈 Improvement tracker</div>
+          ${renderHistoryBars()}
+        </div>
+      </div>
+
+      <div class="section-title">🏆 Recent badges</div>
+      <div class="grid cols-4">
+        ${BADGES.slice(0,4).map(b=>renderBadge(b)).join("")}
+      </div>
+      <div style="margin-top:10px;"><button class="icon-btn" onclick="PF.go('achievements')">View all achievements →</button></div>
+    `;
+  }
+
+  function renderHistoryBars(){
+    if(!data.history.length) return `<div class="empty">No history yet — keep logging to see your trend.</div>`;
+    const max = Math.max(1, ...data.history.map(h=>Math.abs(h.netSavings)));
+    return `<div style="display:flex;align-items:flex-end;gap:8px;height:90px;margin-top:10px;">` +
+      data.history.map(h=>{
+        const pct = Math.max(4, Math.round((Math.abs(h.netSavings)/max)*80));
+        const color = h.netSavings>=0 ? "var(--teal)" : "var(--brick)";
+        return `<div style="flex:1;text-align:center;">
+          <div style="height:${pct}px;background:${color};border-radius:4px 4px 0 0;"></div>
+          <div style="font-size:10px;color:var(--ink-soft);margin-top:4px;">${h.month.slice(5)}</div>
+        </div>`;
+      }).join("") + `</div>`;
+  }
+
+  function renderBadge(b){
+    const unlocked = data.unlockedBadges.includes(b.id);
+    return `<div class="badge ${unlocked?'unlocked':'locked'}">
+      <div class="badge-icon">${unlocked ? b.icon : "🔒"}</div>
+      <div class="badge-name">${b.name}</div>
+      <div class="badge-desc">${b.desc}</div>
+    </div>`;
+  }
+
+  /* ================= RENDER: INCOME ================= */
+  function renderIncome(){
+    const el = document.getElementById("view-income");
+    el.innerHTML = `
+      <div class="page-head"><h1>💰 Income</h1>${pageControls('income')}</div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field"><label>Source</label><input id="inc_source" placeholder="e.g. Salary, Freelance"></div>
+          <div class="field"><label>Amount</label><input id="inc_amount" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Frequency</label>
+            <select id="inc_freq"><option value="monthly">Monthly</option><option value="weekly">Weekly</option><option value="yearly">Yearly</option></select>
+          </div>
+          <div class="field"><label>Date received</label><input id="inc_date" type="date" value="${todayISO()}"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addIncome()">+ Add income</button>
+      </div>
+      <div class="section-title">Your income sources</div>
+      <div class="card">${renderIncomeTable()}</div>
+    `;
+  }
+  function renderIncomeTable(){
+    if(!data.income.length) return `<div class="empty">No income logged yet. Add your salary or other sources above.</div>`;
+    return `<table><thead><tr><th>Source</th><th>Amount</th><th>Frequency</th><th>Date</th><th></th></tr></thead><tbody>
+      ${data.income.map(i=>`<tr>
+        <td>${escapeHtml(i.source)}</td>
+        <td class="num">${fmt(i.amount)}</td>
+        <td style="text-transform:capitalize;">${i.frequency}</td>
+        <td class="num">${i.date||"—"}</td>
+        <td class="row-actions">
+          <button class="mini-btn" onclick="PF.editIncome('${i.id}')">Edit</button>
+          <button class="mini-btn del" onclick="PF.deleteItem('income','${i.id}')">Delete</button>
+        </td></tr>`).join("")}
+    </tbody></table>`;
+  }
+
+  /* ================= RENDER: EXPENSES ================= */
+  function renderExpenses(){
+    const el = document.getElementById("view-expenses");
+    el.innerHTML = `
+      <div class="page-head"><h1>💸 Expenses</h1>${pageControls('expenses')}</div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field"><label>Category</label><input id="exp_cat" placeholder="e.g. Rent, Groceries, Dining out"></div>
+          <div class="field"><label>Amount</label><input id="exp_amount" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Type</label>
+            <select id="exp_type"><option value="need">Need</option><option value="want">Want</option></select>
+          </div>
+          <div class="field"><label>Date</label><input id="exp_date" type="date" value="${todayISO()}"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addExpense()">+ Add expense</button>
+      </div>
+      <div class="section-title">Your expenses</div>
+      <div class="card">${renderExpenseTable()}</div>
+    `;
+  }
+  function renderExpenseTable(){
+    if(!data.expenses.length) return `<div class="empty">No expenses logged yet.</div>`;
+    return `<table><thead><tr><th>Category</th><th>Amount</th><th>Type</th><th>Date</th><th></th></tr></thead><tbody>
+      ${data.expenses.map(e=>`<tr>
+        <td>${escapeHtml(e.category)}</td>
+        <td class="num">${fmt(e.amount)}</td>
+        <td><span class="pill ${e.type}">${e.type}</span></td>
+        <td class="num">${e.date||"—"}</td>
+        <td class="row-actions">
+          <button class="mini-btn" onclick="PF.editExpense('${e.id}')">Edit</button>
+          <button class="mini-btn del" onclick="PF.deleteItem('expenses','${e.id}')">Delete</button>
+        </td></tr>`).join("")}
+    </tbody></table>`;
+  }
+
+  /* ================= RENDER: INVESTMENTS ================= */
+  function renderInvestments(){
+    const el = document.getElementById("view-investments");
+    el.innerHTML = `
+      <div class="page-head"><h1>📈 Investments</h1>${pageControls('investments')}</div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field"><label>Type</label>
+            <select id="inv_type"><option>Fixed Deposit</option><option>Mutual Fund</option><option>Stocks</option><option>Gold</option><option>Real Estate</option><option>Other</option></select>
+          </div>
+          <div class="field"><label>Name / description</label><input id="inv_name" placeholder="e.g. HDFC FD, Nifty Index Fund"></div>
+          <div class="field"><label>Amount invested</label><input id="inv_amount" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Date</label><input id="inv_date" type="date" value="${todayISO()}"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addInvestment()">+ Add investment</button>
+      </div>
+      <div class="section-title">Your investments</div>
+      <div class="card">${renderInvestmentTable()}</div>
+    `;
+  }
+  function renderInvestmentTable(){
+    if(!data.investments.length) return `<div class="empty">No investments logged yet.</div>`;
+    return `<table><thead><tr><th>Type</th><th>Name</th><th>Amount</th><th>Date</th><th></th></tr></thead><tbody>
+      ${data.investments.map(i=>`<tr>
+        <td>${escapeHtml(i.type)}</td>
+        <td>${escapeHtml(i.name)}</td>
+        <td class="num">${fmt(i.amount)}</td>
+        <td class="num">${i.date||"—"}</td>
+        <td class="row-actions">
+          <button class="mini-btn" onclick="PF.editInvestment('${i.id}')">Edit</button>
+          <button class="mini-btn del" onclick="PF.deleteItem('investments','${i.id}')">Delete</button>
+        </td></tr>`).join("")}
+    </tbody></table>`;
+  }
+
+  /* ================= RENDER: DEBT ================= */
+  function renderDebt(){
+    const el = document.getElementById("view-debt");
+    el.innerHTML = `
+      <div class="page-head"><h1>💳 Debt</h1>${pageControls('debt')}</div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field"><label>Debt name</label><input id="debt_name" placeholder="e.g. Credit card, Car loan"></div>
+          <div class="field"><label>Outstanding amount</label><input id="debt_amount" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Interest rate (% p.a.)</label><input id="debt_rate" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Minimum monthly payment</label><input id="debt_min" type="number" min="0" placeholder="0"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addDebt()">+ Add debt</button>
+      </div>
+      <div class="section-title">Your debts &nbsp;<span class="num" style="font-size:13px;color:var(--ink-soft);">(total: ${fmt(totalDebt())})</span></div>
+      <div class="card">${renderDebtTable()}</div>
+    `;
+  }
+  function renderDebtTable(){
+    if(!data.debts.length) return `<div class="empty">No debts logged. If you're debt-free, that's worth celebrating!</div>`;
+    return `<table><thead><tr><th>Name</th><th>Amount</th><th>Interest</th><th>Min. payment</th><th></th></tr></thead><tbody>
+      ${data.debts.map(d=>`<tr>
+        <td>${escapeHtml(d.name)} ${Number(d.interestRate)>15?'<span class="pill want">high interest</span>':''}</td>
+        <td class="num">${fmt(d.amount)}</td>
+        <td class="num">${d.interestRate}%</td>
+        <td class="num">${fmt(d.minPayment)}</td>
+        <td class="row-actions">
+          <button class="mini-btn" onclick="PF.editDebt('${d.id}')">Edit</button>
+          <button class="mini-btn del" onclick="PF.deleteItem('debts','${d.id}')">Delete</button>
+        </td></tr>`).join("")}
+    </tbody></table>`;
+  }
+
+  /* ================= RENDER: EMERGENCY FUND ================= */
+  function renderEmergency(){
+    const ef = data.emergencyFund;
+    const base = ef.monthlyExpenseEstimate || totalExpenses();
+    const target = base*(ef.targetMonths||6);
+    const pct = target>0 ? Math.min(100, Math.round((ef.current/target)*100)) : 0;
+    const el = document.getElementById("view-emergency");
+    el.innerHTML = `
+      <div class="page-head"><h1>🛡️ Emergency Fund</h1>${pageControls('emergency')}</div>
+      <div class="card" style="margin-bottom:16px;">
+        <div class="form-grid">
+          <div class="field"><label>Current fund balance</label><input id="ef_current" type="number" min="0" value="${ef.current}"></div>
+          <div class="field"><label>Estimated monthly expenses</label><input id="ef_monthly" type="number" min="0" value="${ef.monthlyExpenseEstimate}" placeholder="${totalExpenses()}"></div>
+          <div class="field"><label>Target (months of coverage)</label>
+            <select id="ef_months">
+              ${[3,4,5,6].map(m=>`<option value="${m}" ${ef.targetMonths==m?'selected':''}>${m} months</option>`).join("")}
+            </select>
+          </div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.updateEmergency()">Update fund</button>
+      </div>
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;font-size:13.5px;">
+          <span>${fmt(ef.current)} saved</span><span>Target: ${fmt(target)}</span>
+        </div>
+        <div class="progress"><div class="progress-fill" style="width:${pct}%;"></div></div>
+        <div class="small-note" style="margin-top:10px;">
+          ${pct>=100 ? "🎉 You've reached your emergency fund target!" : `You're at ${pct}% of your ${ef.targetMonths||6}-month target.`}
+        </div>
+      </div>
+      <div class="insight-card" style="margin-top:16px;">
+        <div class="tag">Why it matters</div>
+        An emergency fund covers essential costs — rent, food, utilities — if income stops suddenly. Most planners suggest keeping 3–6 months of expenses in an easily accessible account, separate from investments.
+      </div>
+    `;
+  }
+
+  /* ================= RENDER: GOALS ================= */
+  function renderGoals(){
+    const el = document.getElementById("view-goals");
+    el.innerHTML = `
+      <div class="page-head"><h1>🎯 Goals</h1>${pageControls('goals')}</div>
+      <div class="card">
+        <div class="form-grid">
+          <div class="field"><label>Goal name</label><input id="goal_name" placeholder="e.g. Vacation, New laptop"></div>
+          <div class="field"><label>Target amount</label><input id="goal_target" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Saved so far</label><input id="goal_current" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Target date</label><input id="goal_deadline" type="date"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addGoal()">+ Add goal</button>
+      </div>
+      <div class="section-title">Your goals</div>
+      <div class="grid cols-2">${renderGoalCards()}</div>
+    `;
+  }
+  function renderGoalCards(){
+    if(!data.goals.length) return `<div class="card empty" style="grid-column:1/-1;">No goals yet — add something you're saving toward.</div>`;
+    return data.goals.map(g=>{
+      const pct = g.target>0 ? Math.min(100, Math.round((g.current/g.target)*100)) : 0;
+      return `<div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <b>${escapeHtml(g.name)}</b>
+          <div class="row-actions">
+            <button class="mini-btn" onclick="PF.editGoal('${g.id}')">Edit</button>
+            <button class="mini-btn del" onclick="PF.deleteItem('goals','${g.id}')">Delete</button>
+          </div>
+        </div>
+        <div style="font-size:13px;color:var(--ink-soft);margin-top:4px;">${fmt(g.current)} of ${fmt(g.target)} ${g.deadline?('· by '+g.deadline):''}</div>
+        <div class="progress"><div class="progress-fill" style="width:${pct}%;"></div></div>
+      </div>`;
+    }).join("");
+  }
+
+  /* ================= RENDER: INSURANCE ================= */
+  function renderInsurance(){
+    const insAlerts = getInsuranceAlerts();
+    const el = document.getElementById("view-insurance");
+    el.innerHTML = `
+      <div class="page-head"><h1>☂️ Insurance</h1>${pageControls('insurance')}</div>
+      ${insAlerts.length ? insAlerts.map(a=>`<div class="alert ${a.level==='urgent'?'urgent':'soon'}">⏰ ${a.text}</div>`).join("") : `<div class="alert info">✅ No premium dates within the next 2 days.</div>`}
+
+      <div class="section-title">🛡️ Insurance policies</div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="form-grid">
+          <div class="field"><label>Policy name</label><input id="ins_name" placeholder="e.g. LIC Term Plan"></div>
+          <div class="field"><label>Type</label><select id="ins_type"><option value="life">Life</option><option value="health">Health</option></select></div>
+          <div class="field"><label>Coverage amount</label><input id="ins_coverage" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Premium amount</label><input id="ins_premium" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Frequency</label><select id="ins_freq"><option value="yearly">Yearly</option><option value="half-yearly">Half-yearly</option><option value="quarterly">Quarterly</option><option value="monthly">Monthly</option></select></div>
+          <div class="field"><label>Next premium date</label><input id="ins_date" type="date"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addInsurance()">+ Add policy</button>
+      </div>
+      <div class="card">${renderInsuranceTable()}</div>
+    `;
+  }
+  function renderInsuranceTable(){
+    if(!data.insurance.length) return `<div class="empty">No insurance policies tracked yet.</div>`;
+    return `<table><thead><tr><th>No.</th><th>Name</th><th>Coverage</th><th>Premium</th><th>Frequency</th><th>Premium date</th><th></th></tr></thead><tbody>
+      ${data.insurance.map((p,idx)=>{
+        const d = daysUntil(p.premiumDate);
+        const highlight = d<=2 && d>=0 ? `style="background:var(--brick-soft);"` : (d<=7 && d>=0 ? `style="background:var(--amber-soft);"` : "");
+        return `<tr ${highlight}>
+          <td>${idx+1}</td>
+          <td>${escapeHtml(p.name)} <span class="pill ${p.type}">${p.type}</span></td>
+          <td class="num">${fmt(p.coverage)}</td>
+          <td class="num">${fmt(p.premium)}</td>
+          <td style="text-transform:capitalize;">${p.frequency}</td>
+          <td class="num">${p.premiumDate||"—"}</td>
+          <td class="row-actions">
+            <button class="mini-btn" onclick="PF.editInsurance('${p.id}')">Edit</button>
+            <button class="mini-btn del" onclick="PF.deleteItem('insurance','${p.id}')">Delete</button>
+          </td></tr>`;
+      }).join("")}
+    </tbody></table>`;
+  }
+
+  /* ================= RENDER: SAVINGS ================= */
+  function renderSavings(){
+    const el = document.getElementById("view-savings");
+    el.innerHTML = `
+      <div class="page-head"><h1>🏦 Savings</h1>${pageControls('savings')}</div>
+      <p style="color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">Money set aside in savings accounts or deposits — kept separate from your investments so you can see how much of a cushion you're building.</p>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="form-grid">
+          <div class="field"><label>Label</label><input id="sav_name" placeholder="e.g. Savings account, Recurring deposit"></div>
+          <div class="field"><label>Amount</label><input id="sav_amount" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Date</label><input id="sav_date" type="date" value="${todayISO()}"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addSaving()">+ Add savings entry</button>
+      </div>
+      <div class="section-title">Your savings &nbsp;<span class="num" style="font-size:13px;color:var(--ink-soft);">(total: ${fmt(totalSavings())})</span></div>
+      <div class="card">${renderSavingsTable()}</div>
+    `;
+  }
+  function renderSavingsTable(){
+    if(!data.savings.length) return `<div class="empty">No savings logged yet. Add a deposit above to start tracking.</div>`;
+    return `<table><thead><tr><th>Label</th><th>Amount</th><th>Date</th><th></th></tr></thead><tbody>
+      ${data.savings.map(s=>`<tr>
+        <td>${escapeHtml(s.name)}</td>
+        <td class="num">${fmt(s.amount)}</td>
+        <td class="num">${s.date||"—"}</td>
+        <td class="row-actions">
+          <button class="mini-btn" onclick="PF.editSaving('${s.id}')">Edit</button>
+          <button class="mini-btn del" onclick="PF.deleteItem('savings','${s.id}')">Delete</button>
+        </td></tr>`).join("")}
+    </tbody></table>`;
+  }
+
+  /* ================= RENDER: UPCOMING PAYMENTS (SIPs + a payments calendar) ================= */
+  function renderPayments(){
+    const el = document.getElementById("view-payments");
+    el.innerHTML = `
+      <div class="page-head"><h1>🔁 Upcoming Payments</h1>${pageControls('payments')}</div>
+      ${getAlerts().length ? getAlerts().map(a=>`<div class="alert ${a.level==='urgent'?'urgent':'soon'}">⏰ ${a.text}</div>`).join("") : `<div class="alert info">✅ No premium or SIP payments within the next 2 days.</div>`}
+
+      <div class="section-title">📅 Payments calendar</div>
+      <div class="card" style="margin-bottom:26px;">${renderUpcomingCalendar()}</div>
+
+      <div class="section-title">📈 SIPs</div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="form-grid">
+          <div class="field"><label>SIP name</label><input id="sip_name" placeholder="e.g. Nifty 50 Index SIP"></div>
+          <div class="field"><label>Amount</label><input id="sip_amount" type="number" min="0" placeholder="0"></div>
+          <div class="field"><label>Next SIP date</label><input id="sip_date" type="date"></div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.addSip()">+ Add SIP</button>
+      </div>
+      <div class="card">${renderSipTable()}</div>
+    `;
+  }
+  function renderUpcomingCalendar(){
+    const items = [
+      ...data.insurance.map(p=>({label:p.name, sub:"Insurance premium", amount:p.premium, date:p.premiumDate})),
+      ...data.sips.map(s=>({label:s.name, sub:"SIP", amount:s.amount, date:s.date})),
+    ].filter(i=>i.date).sort((a,b)=> new Date(a.date) - new Date(b.date));
+    if(!items.length) return `<div class="empty">No upcoming insurance premiums or SIPs scheduled yet. Add them below.</div>`;
+    return `<table><thead><tr><th>Item</th><th>Type</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead><tbody>
+      ${items.map(i=>{
+        const d = daysUntil(i.date);
+        let status = `${d} day${d===1?"":"s"} away`;
+        let pillStyle = "background:var(--teal-soft);color:var(--teal);";
+        if(d<0){ status="Past due"; pillStyle="background:var(--brick-soft);color:var(--brick);"; }
+        else if(d<=2){ status = d===0?"Due today":status; pillStyle="background:var(--brick-soft);color:var(--brick);"; }
+        else if(d<=7){ pillStyle="background:var(--amber-soft);color:var(--amber);"; }
+        return `<tr>
+          <td>${escapeHtml(i.label)}</td>
+          <td>${i.sub}</td>
+          <td class="num">${fmt(i.amount)}</td>
+          <td class="num">${i.date}</td>
+          <td><span class="pill" style="${pillStyle}">${status}</span></td>
+        </tr>`;
+      }).join("")}
+    </tbody></table>`;
+  }
+  function renderSipTable(){
+    if(!data.sips.length) return `<div class="empty">No SIPs tracked yet.</div>`;
+    return `<table><thead><tr><th>Name</th><th>Amount</th><th>Next date</th><th></th></tr></thead><tbody>
+      ${data.sips.map(s=>{
+        const d = daysUntil(s.date);
+        const highlight = d<=2 && d>=0 ? `style="background:var(--brick-soft);"` : (d<=7 && d>=0 ? `style="background:var(--amber-soft);"` : "");
+        return `<tr ${highlight}>
+          <td>${escapeHtml(s.name)}</td>
+          <td class="num">${fmt(s.amount)}</td>
+          <td class="num">${s.date||"—"}</td>
+          <td class="row-actions">
+            <button class="mini-btn" onclick="PF.editSip('${s.id}')">Edit</button>
+            <button class="mini-btn del" onclick="PF.deleteItem('sips','${s.id}')">Delete</button>
+          </td></tr>`;
+      }).join("")}
+    </tbody></table>`;
+  }
+
+  /* ================= RENDER: LEARN ================= */
+  const LEARN_CONTENT = [
+    {id:"basics", title:"1. Basics of Money", body:`
+      <p><b>Income vs Expenses:</b> Income is money coming in (salary, freelance, business). Expenses are money going out. The gap between the two is what you can save or invest.</p>
+      <p><b>Savings vs Investment:</b> Savings sit safely and stay liquid — good for short-term needs. Investments aim to grow over time but carry risk and are usually less liquid.</p>
+      <p><b>Needs vs Wants:</b> Needs are essential (rent, groceries, utilities). Wants improve quality of life but aren't essential (dining out, subscriptions). Telling them apart is the first step to a healthy budget.</p>
+      <div class="dyk">💡 Did you know? Small recurring "wants" — like daily coffee — often add up to more per year than people expect.</div>
+    `},
+    {id:"invest", title:"2. Investment Education", body:`
+      <table class="invest-table"><thead><tr><th>Type</th><th>Risk</th><th>Typical returns</th><th>Liquidity</th><th>Best suited for</th></tr></thead>
+      <tbody>
+        <tr><td>Fixed Deposit</td><td>Low</td><td>Low–Moderate</td><td>Low–Moderate</td><td>Capital safety, short-term goals</td></tr>
+        <tr><td>Mutual Funds</td><td>Low–High (varies)</td><td>Moderate–High</td><td>High</td><td>Long-term wealth building</td></tr>
+        <tr><td>Stocks</td><td>High</td><td>High (volatile)</td><td>High</td><td>Long horizon, risk-tolerant investors</td></tr>
+        <tr><td>Gold</td><td>Moderate</td><td>Moderate</td><td>High</td><td>Diversification, inflation hedge</td></tr>
+        <tr><td>Real Estate</td><td>Moderate–High</td><td>Moderate (long-term)</td><td>Low</td><td>Long-term wealth, larger capital</td></tr>
+      </tbody></table>
+      <div class="quiz" id="quiz_invest">
+        <b>Quick check:</b> Which of these is typically the most liquid?
+        <div>
+          <button class="mini-btn" onclick="PF.answerQuiz('quiz_invest', this, false)">Real Estate</button>
+          <button class="mini-btn" onclick="PF.answerQuiz('quiz_invest', this, true)">Mutual Funds</button>
+          <button class="mini-btn" onclick="PF.answerQuiz('quiz_invest', this, false)">Fixed Deposit</button>
+        </div>
+      </div>
+    `},
+    {id:"debt", title:"3. Debt Education", body:`
+      <p><b>Good debt vs bad debt:</b> Good debt (like an education or home loan) can build long-term value. Bad debt (like high-interest credit card debt for consumption) drains money without building value.</p>
+      <p><b>Interest impact:</b> High-interest debt compounds quickly — the longer a balance sits, the more it costs. Paying more than the minimum whenever possible reduces total interest paid.</p>
+      <p><b>Credit score basics:</b> Your credit score reflects how reliably you repay debt. Paying on time, keeping balances low relative to limits, and avoiding too many new credit lines all help.</p>
+    `},
+    {id:"emergency", title:"4. Emergency Fund", body:`
+      <p><b>Why it matters:</b> Job loss, medical emergencies, or urgent repairs can hit without warning. An emergency fund keeps you from relying on high-interest debt when they do.</p>
+      <p><b>Ideal amount:</b> A common guideline is 3–6 months of essential expenses, kept in an account you can access quickly without penalty.</p>
+    `},
+    {id:"budget", title:"5. Budgeting Methods", body:`
+      <p><b>50/30/20 rule:</b> Roughly 50% of income to needs, 30% to wants, 20% to savings/debt repayment. A simple starting framework, not a strict law.</p>
+      <p><b>Zero-based budgeting:</b> Every unit of income is assigned a job — expenses, savings, debt repayment — until income minus allocations equals zero. Forces intentional decisions about every rupee.</p>
+      <div class="dyk">💡 Did you know? Budgeting methods work best when reviewed monthly — your numbers will drift as life changes.</div>
+    `},
+  ];
+  function renderLearn(){
+    const el = document.getElementById("view-learn");
+    el.innerHTML = `
+      <div class="page-head"><h1>🧠 Learn</h1>${pageControls('learn')}</div>
+      <p style="color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">A quick, judgment-free primer on the core ideas behind this journal. Educational only — not financial advice.</p>
+      ${LEARN_CONTENT.map(c=>`
+        <div class="accordion" id="acc_${c.id}">
+          <div class="accordion-head" onclick="PF.toggleAccordion('${c.id}')">
+            <span>${c.title}</span><span class="chev">▾</span>
+          </div>
+          <div class="accordion-body">${c.body}</div>
+        </div>
+      `).join("")}
+    `;
+  }
+
+  /* ================= RENDER: ACHIEVEMENTS ================= */
+  function renderAchievements(){
+    const el = document.getElementById("view-achievements");
+    el.innerHTML = `
+      <div class="page-head"><h1>🏆 Achievements</h1>${pageControls('achievements')}</div>
+      <p style="color:var(--ink-soft);font-size:13.5px;margin-top:-8px;">Unlocked as you build good habits inside Pocket Friendly.</p>
+      <div class="grid cols-4">${BADGES.map(b=>renderBadge(b)).join("")}</div>
+    `;
+  }
+
+  /* ================= RENDER: SETTINGS ================= */
+  function renderSettings(){
+    const el = document.getElementById("view-settings");
+    el.innerHTML = `
+      <div class="page-head"><h1>⚙️ Settings</h1>${pageControls('settings')}</div>
+      <div class="card" style="margin-bottom:14px;">
+        <div class="section-title" style="margin-top:0;">Profile</div>
+        <div class="form-grid">
+          <div class="field"><label>Display name</label><input id="set_name" value="${escapeHtml(data.profile.name)}"></div>
+          <div class="field"><label>Avatar</label>
+            <div class="avatar-pick" id="setAvatarPick">
+              ${AVATARS.map(a=>`<button type="button" class="avatar-opt ${a===data.profile.avatar?'selected':''}" data-av="${a}">${a}</button>`).join("")}
+            </div>
+          </div>
+        </div>
+        <button class="icon-btn primary" onclick="PF.updateProfile()">Update profile</button>
+      </div>
+      <div class="card">
+        <div class="section-title" style="margin-top:0;">Danger zone</div>
+        <p style="font-size:13px;color:var(--ink-soft);">Resetting clears all data for <b>${escapeHtml(data.profile.name)}</b> in this browser. This cannot be undone.</p>
+        <button class="icon-btn danger" onclick="PF.resetData()">♻️ Reset all my data</button>
+      </div>
+    `;
+    document.querySelectorAll("#setAvatarPick .avatar-opt").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll("#setAvatarPick .avatar-opt").forEach(b=>b.classList.remove("selected"));
+        btn.classList.add("selected");
+      });
+    });
+  }
+
+  /* ================= RENDER ALL ================= */
+  function renderAll(){
+    renderDashboard();
+    renderIncome();
+    renderExpenses();
+    renderInvestments();
+    renderDebt();
+    renderEmergency();
+    renderGoals();
+    renderInsurance();
+    renderSavings();
+    renderPayments();
+    renderLearn();
+    renderAchievements();
+    renderSettings();
+  }
+
+  /* ================= PUBLIC API (used by inline handlers) ================= */
+  const PF = {
+    go: switchView,
+    goDashboard: ()=>switchView("dashboard"),
+    saveNow: ()=>{ saveData(false); checkAchievements(); renderAll(); },
+    refresh: (viewId)=>{
+      data = loadData(currentUser); // reload latest saved data
+      recalcHistory();
+      renderAll();
+      showToast("Refreshed with latest saved data");
+    },
+
+    addIncome(){
+      const source = document.getElementById("inc_source").value.trim();
+      const amount = document.getElementById("inc_amount").value;
+      const frequency = document.getElementById("inc_freq").value;
+      const date = document.getElementById("inc_date").value || todayISO();
+      if(!source || !amount){ showToast("Please fill in source and amount"); return; }
+      data.income.push({id:uid(), source, amount:Number(amount), frequency, date});
+      finishEdit("income");
+    },
+    editIncome(id){
+      const item = data.income.find(i=>i.id===id); if(!item) return;
+      const source = prompt("Source:", item.source); if(source===null) return;
+      const amount = prompt("Amount:", item.amount); if(amount===null) return;
+      item.source = source; item.amount = Number(amount)||0;
+      finishEdit("income");
+    },
+    addExpense(){
+      const category = document.getElementById("exp_cat").value.trim();
+      const amount = document.getElementById("exp_amount").value;
+      const type = document.getElementById("exp_type").value;
+      const date = document.getElementById("exp_date").value || todayISO();
+      if(!category || !amount){ showToast("Please fill in category and amount"); return; }
+      data.expenses.push({id:uid(), category, amount:Number(amount), type, date});
+      finishEdit("expenses");
+    },
+    editExpense(id){
+      const item = data.expenses.find(i=>i.id===id); if(!item) return;
+      const category = prompt("Category:", item.category); if(category===null) return;
+      const amount = prompt("Amount:", item.amount); if(amount===null) return;
+      item.category = category; item.amount = Number(amount)||0;
+      finishEdit("expenses");
+    },
+    addInvestment(){
+      const type = document.getElementById("inv_type").value;
+      const name = document.getElementById("inv_name").value.trim();
+      const amount = document.getElementById("inv_amount").value;
+      const date = document.getElementById("inv_date").value || todayISO();
+      if(!name || !amount){ showToast("Please fill in name and amount"); return; }
+      data.investments.push({id:uid(), type, name, amount:Number(amount), date});
+      finishEdit("investments");
+    },
+    editInvestment(id){
+      const item = data.investments.find(i=>i.id===id); if(!item) return;
+      const name = prompt("Name:", item.name); if(name===null) return;
+      const amount = prompt("Amount:", item.amount); if(amount===null) return;
+      item.name = name; item.amount = Number(amount)||0;
+      finishEdit("investments");
+    },
+    addDebt(){
+      const name = document.getElementById("debt_name").value.trim();
+      const amount = document.getElementById("debt_amount").value;
+      const interestRate = document.getElementById("debt_rate").value || 0;
+      const minPayment = document.getElementById("debt_min").value || 0;
+      if(!name || !amount){ showToast("Please fill in name and amount"); return; }
+      data.debts.push({id:uid(), name, amount:Number(amount), interestRate:Number(interestRate), minPayment:Number(minPayment)});
+      finishEdit("debt");
+    },
+    editDebt(id){
+      const item = data.debts.find(i=>i.id===id); if(!item) return;
+      const amount = prompt("Outstanding amount:", item.amount); if(amount===null) return;
+      item.amount = Number(amount)||0;
+      finishEdit("debt");
+    },
+    updateEmergency(){
+      data.emergencyFund.current = Number(document.getElementById("ef_current").value)||0;
+      data.emergencyFund.monthlyExpenseEstimate = Number(document.getElementById("ef_monthly").value)||0;
+      data.emergencyFund.targetMonths = Number(document.getElementById("ef_months").value)||6;
+      finishEdit("emergency");
+    },
+    addGoal(){
+      const name = document.getElementById("goal_name").value.trim();
+      const target = document.getElementById("goal_target").value;
+      const current = document.getElementById("goal_current").value || 0;
+      const deadline = document.getElementById("goal_deadline").value;
+      if(!name || !target){ showToast("Please fill in name and target"); return; }
+      data.goals.push({id:uid(), name, target:Number(target), current:Number(current), deadline});
+      finishEdit("goals");
+    },
+    editGoal(id){
+      const item = data.goals.find(i=>i.id===id); if(!item) return;
+      const current = prompt("Saved so far:", item.current); if(current===null) return;
+      item.current = Number(current)||0;
+      finishEdit("goals");
+    },
+    addSaving(){
+      const name = document.getElementById("sav_name").value.trim();
+      const amount = document.getElementById("sav_amount").value;
+      const date = document.getElementById("sav_date").value || todayISO();
+      if(!name || !amount){ showToast("Please fill in a label and amount"); return; }
+      data.savings.push({id:uid(), name, amount:Number(amount), date});
+      finishEdit("savings");
+    },
+    editSaving(id){
+      const item = data.savings.find(i=>i.id===id); if(!item) return;
+      const amount = prompt("Amount:", item.amount); if(amount===null) return;
+      item.amount = Number(amount)||0;
+      finishEdit("savings");
+    },
+    addInsurance(){
+      const name = document.getElementById("ins_name").value.trim();
+      const type = document.getElementById("ins_type").value;
+      const coverage = document.getElementById("ins_coverage").value || 0;
+      const premium = document.getElementById("ins_premium").value || 0;
+      const frequency = document.getElementById("ins_freq").value;
+      const premiumDate = document.getElementById("ins_date").value;
+      if(!name || !premiumDate){ showToast("Please fill in policy name and premium date"); return; }
+      data.insurance.push({id:uid(), name, type, coverage:Number(coverage), premium:Number(premium), frequency, premiumDate});
+      finishEdit("insurance");
+    },
+    editInsurance(id){
+      const item = data.insurance.find(i=>i.id===id); if(!item) return;
+      const premiumDate = prompt("Next premium date (YYYY-MM-DD):", item.premiumDate); if(premiumDate===null) return;
+      item.premiumDate = premiumDate;
+      finishEdit("insurance");
+    },
+    addSip(){
+      const name = document.getElementById("sip_name").value.trim();
+      const amount = document.getElementById("sip_amount").value;
+      const date = document.getElementById("sip_date").value;
+      if(!name || !date){ showToast("Please fill in SIP name and date"); return; }
+      data.sips.push({id:uid(), name, amount:Number(amount)||0, date});
+      finishEdit("payments");
+    },
+    editSip(id){
+      const item = data.sips.find(i=>i.id===id); if(!item) return;
+      const date = prompt("Next SIP date (YYYY-MM-DD):", item.date); if(date===null) return;
+      item.date = date;
+      finishEdit("payments");
+    },
+    deleteItem(collection, id){
+      if(!confirm("Delete this entry?")) return;
+      data[collection] = data[collection].filter(i=>i.id!==id);
+      finishEdit(null);
+    },
+    toggleAccordion(id){
+      document.getElementById("acc_"+id).classList.toggle("open");
+    },
+    answerQuiz(quizId, btn, correct){
+      const box = document.getElementById(quizId);
+      box.querySelectorAll("button").forEach(b=>b.disabled=true);
+      const msg = document.createElement("div");
+      msg.style.marginTop = "8px";
+      msg.style.fontWeight = "600";
+      msg.textContent = correct ? "✅ Correct — mutual funds are generally easy to buy and sell." : "❌ Not quite — mutual funds are typically the most liquid of these options.";
+      box.appendChild(msg);
+    },
+    updateProfile(){
+      data.profile.name = document.getElementById("set_name").value.trim() || data.profile.name;
+      const selected = document.querySelector("#setAvatarPick .avatar-opt.selected");
+      if(selected) data.profile.avatar = selected.dataset.av;
+      document.getElementById("chipAvatar").textContent = data.profile.avatar;
+      document.getElementById("chipName").textContent = data.profile.name;
+      finishEdit("settings");
+    },
+    resetData(){
+      if(!confirm("Are you sure? This will permanently erase all your Pocket Friendly data.")) return;
+      if(!confirm("This cannot be undone. Reset everything?")) return;
+      const name = data.profile.name, avatar = data.profile.avatar;
+      data = freshData(name, avatar);
+      saveData(true);
+      recalcHistory();
+      renderAll();
+      switchView("dashboard");
+      showToast("Your journal has been reset");
+    }
+  };
+  window.PF = PF;
+
+  function finishEdit(viewId){
+    saveData(true);
+    recalcHistory();
+    checkAchievements();
+    renderAll();
+    if(viewId) switchView(viewId);
+    showToast("Data saved successfully ✅");
+  }
+
+  /* ================= BOOT ================= */
+  buildAvatarPicker();
+  renderExistingUsers();
+  buildTabs();
+
+  const lastUser = localStorage.getItem("pf_current");
+  if(lastUser && getUsers().includes(lastUser)){
+    enterApp(lastUser);
+  }
+
+})();
 </script>
-
 </body>
 </html>
