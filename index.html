@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Pocket Friendly</title>
+<style>
+body {
+  font-family: Arial;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+}
+
+.dark {
+  background: #121212;
+  color: white;
+}
+
+header {
+  padding: 15px;
+  background: #4CAF50;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+}
+
+.container {
+  padding: 20px;
+}
+
+.card {
+  background: white;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+}
+
+.dark .card {
+  background: #1e1e1e;
+}
+
+button {
+  padding: 8px 12px;
+  margin: 5px;
+}
+
+input {
+  padding: 8px;
+  margin: 5px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div>
+    <strong>Pocket Friendly</strong>
+  </div>
+  <div id="userBox"></div>
+</header>
+
+<div class="container">
+
+  <button onclick="toggleTheme()">🌗 Toggle Theme</button>
+  <button onclick="saveData()">💾 Save</button>
+  <button onclick="loadData()">🔄 Refresh</button>
+  <button onclick="resetApp()">♻️ Reset</button>
+
+  <div class="card">
+    <h3>💰 Income</h3>
+    <input type="number" id="incomeInput" placeholder="Enter income">
+  </div>
+
+  <div class="card">
+    <h3>💸 Expenses</h3>
+    <input type="number" id="expenseInput" placeholder="Enter expenses">
+  </div>
+
+  <div class="card">
+    <h3>📊 Dashboard</h3>
+    <p>Total Income: <span id="incomeDisplay">0</span></p>
+    <p>Total Expenses: <span id="expenseDisplay">0</span></p>
+    <p>Savings: <span id="savingsDisplay">0</span></p>
+    <p id="insight"></p>
+  </div>
+
+  <div class="card">
+    <h3>⚠️ Disclaimer</h3>
+    <p style="font-size:12px;">
+      This tool is for educational and personal financial tracking purposes only.
+      It does not provide investment advice.
+    </p>
+  </div>
+
+</div>
+
+<script>
+
+// USER LICENSE SYSTEM
+let user = JSON.parse(localStorage.getItem("user"));
+
+if (!user) {
+  let name = prompt("Enter your name");
+  let email = prompt("Enter your email");
+
+  user = { name, email };
+  localStorage.setItem("user", JSON.stringify(user));
+}
+
+document.getElementById("userBox").innerHTML =
+  `👤 ${user.name} <br> 📧 ${user.email} <br> 🔒 Personal Use`;
+
+// DATA STORAGE
+let data = JSON.parse(localStorage.getItem("data")) || {
+  income: 0,
+  expenses: 0
+};
+
+// LOAD DATA
+function loadData() {
+  document.getElementById("incomeDisplay").innerText = data.income;
+  document.getElementById("expenseDisplay").innerText = data.expenses;
+
+  let savings = data.income - data.expenses;
+  document.getElementById("savingsDisplay").innerText = savings;
+
+  // INSIGHT
+  let insight = "";
+  if (data.expenses > data.income) {
+    insight = "⚠️ You are overspending!";
+  } else {
+    insight = "✅ Good job managing money!";
+  }
+
+  document.getElementById("insight").innerText = insight;
+}
+
+// SAVE DATA
+function saveData() {
+  data.income = Number(document.getElementById("incomeInput").value);
+  data.expenses = Number(document.getElementById("expenseInput").value);
+
+  localStorage.setItem("data", JSON.stringify(data));
+  alert("Data saved successfully ✅");
+
+  loadData();
+}
+
+// RESET
+function resetApp() {
+  if (confirm("Are you sure?")) {
+    localStorage.clear();
+    location.reload();
+  }
+}
+
+// THEME
+function toggleTheme() {
+  document.body.classList.toggle("dark");
+}
+
+// INIT
+loadData();
+
+</script>
+
+</body>
+</html>
